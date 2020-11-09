@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<idynomics>
+
+	
+
+	<simulator>
+        
+        <param name="quietMode">false</param>
+		
+		<param name="restartPreviousRun">false</param>
+		
+		<param name="randomSeed">42</param>
+		
+		<param name="outputPeriod" unit="hour">1</param>
+
+		
+		<param name="checkForReleaseUpdate">true</param>
+
+		
+		<timeStep>
+			<param name="adaptive">true</param>
+			<param name="timeStepIni" unit="hour">0.1</param>
+			<param name="timeStepMin" unit="hour">0.05</param>
+			<param name="timeStepMax" unit="hour">1.0</param>
+			<param name="endOfSimulation" unit="day">1</param>
+		</timeStep>
+
+		
+		<param name="attachment">onetime</param>
+		
+		
+		<param name="agentTimeStep" unit="hour">0.05</param>
+		
+        <param name="invComp">true</param> 
+	</simulator>
+
+
+	
+	<input>
+		<param name="useAgentFile">false</param>
+		<param name="inputAgentFileURL">agent_State(last).xml</param>
+		<param name="useBulkFile">false</param>
+		<param name="inputBulkFileURL">env_Sum(last).xml</param>
+	</input>
+
+
+
+	
+	<solute domain="MyBiofilm" name="pressure">
+		<param name="diffusivity" unit="m2.day-1">1.0</param>
+	</solute>
+	<solute domain="MyBiofilm" name="MyProtein">
+		<param name="diffusivity" unit="m2.day-1">4.32e-6</param>
+	</solute>
+	<solute domain="MyBiofilm" name="MyToxin">
+		<param name="diffusivity" unit="m2.day-1">4.32e-6</param>
+	</solute>
+
+	<particle name="biomass">
+		<param name="density" unit="g.L-1">550.0</param>
+	</particle>
+	<particle name="inert">
+		<param name="density" unit="g.L-1">550</param>
+	</particle>
+	<particle name="capsule">
+		<param name="density" unit="g.L-1">0.0</param>
+	</particle>
+
+
+
+	
+
+	<world>
+		<bulk name="MyTank">
+
+			
+			<param name="isConstant">false</param>
+			<param name="D" unit="h-1">0.6</param>
+
+			
+
+			
+			<solute name="pressure">
+				<param name="Sbulk" unit="g.L-1">0.0</param>
+				<param name="Sin" unit="g.L-1">0.0</param>
+			</solute>
+			<solute name="MyProtein">
+				<param name="Sbulk" unit="g.L-1">16</param>
+				<param name="Sin" unit="g.L-1">16</param>
+			</solute>
+			<solute name="MyToxin">
+				<param name="Sbulk" unit="g.L-1">1</param>
+				<param name="Sin" unit="g.L-1">1</param>
+			</solute>
+		</bulk>
+
+		
+		<computationDomain name="MyBiofilm">
+
+			
+			
+			<grid nDim="2" nI="65" nJ="65" nK="1"/>
+			<param name="resolution" unit="um">8.0</param>
+
+			
+			<param name="boundaryLayer" unit="um">18.0</param>
+
+			
+			<param name="biofilmDiffusivity">0.8</param>
+
+			
+			<param name="specificArea" unit="m2.m-3">80.0</param>
+
+
+			
+			<boundaryCondition class="BoundaryZeroFlux" name="y0z">
+				<shape class="Planar">
+					<param name="pointIn" i="-1" j="0" k="0"/>
+					<param name="vectorOut" i="-1" j="0" k="0"/>
+				</shape>
+			</boundaryCondition>
+
+			<boundaryCondition class="BoundaryBulk" name="yNz">
+				<param name="activeForSolute">yes</param>
+				<param name="bulk">MyTank</param>
+				<shape class="Planar">
+					<param name="pointIn" i="65" j="0" k="0"/>
+					<param name="vectorOut" i="1" j="0" k="0"/>
+				</shape>
+			</boundaryCondition>
+
+			<boundaryCondition class="BoundaryCyclic" name="x0z">
+				<shape class="Planar">
+					<param name="pointIn" i="0" j="-1" k="0"/>
+					<param name="vectorOut" i="0" j="-1" k="0"/>
+				</shape>
+				<shape class="Planar">
+					<param name="pointIn" i="0" j="65" k="0"/>
+					<param name="vectorOut" i="0" j="1" k="0"/>
+				</shape>
+			</boundaryCondition>
+
+			<boundaryCondition class="BoundaryCyclic" name="x0y">
+				<shape class="Planar">
+					<param name="pointIn" i="0" j="0" k="-1"/>
+					<param name="vectorOut" i="0" j="0" k="-1"/>
+				</shape>
+				<shape class="Planar">
+					<param name="pointIn" i="0" j="0" k="1"/>
+					<param name="vectorOut" i="0" j="0" k="1"/>
+				</shape>
+			</boundaryCondition>
+		</computationDomain>
+	</world>
+
+
+
+	
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="MyGrowthgingivalis">
+		<param name="muMax" unit="hour-1">0.2383</param>
+		<kineticFactor class="MonodKinetic" solute="MyProtein">
+			<param name="Ks" unit="g.L-1">6.1609</param>
+		</kineticFactor>
+		<yield>
+			<param name="MyProtein" unit="g.g-1">-0.6</param>
+			<param name="MyToxin" unit="g.g-1">-0.4</param>
+			<param name="biomass" unit="g.g-1">1</param>
+		</yield>
+	</reaction>
+
+	
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="MyGrowthgordonii">
+		<param name="muMax" unit="hour-1">0.9624</param>
+		<kineticFactor class="MonodKinetic" solute="MyProtein">
+			<param name="Ks" unit="g.L-1">0.8727</param>
+		</kineticFactor>
+		<yield>
+			
+			<param name="MyProtein" unit="g.g-1">-1</param>
+			<param name="biomass" unit="g.g-1">0.18</param>
+		</yield>
+	</reaction>
+
+	<reaction catalyzedBy="biomass" class="ReactionFactor" name="MyToxingordonii">
+		<param name="muMax" unit="hour-1">9e-11</param>
+		<yield>
+		
+			<param name="biomass" unit="g.g-1">-0.1</param>
+			<param name="MyToxin" unit="g.g-1">1</param>
+		</yield>
+	</reaction>
+
+
+	
+
+	<solver class="Solver_multigrid" name="solutes" domain="MyBiofilm">
+		<param name="active">true</param>
+		<param name="preStep">150</param>
+		<param name="postStep">150</param>
+		<param name="coarseStep">1500</param>
+		<param name="nCycles">5</param>
+
+		<reaction name="MyGrowthgingivalis"/>
+		<reaction name="MyGrowthgordonii"/>
+		<reaction name="MyToxingordonii"/>
+	</solver>
+
+	
+	<solver class="Solver_pressure" name="pressure" domain="MyBiofilm">
+		<param name="active">true</param>
+	</solver>
+
+
+
+	
+
+	<agentGrid>
+		
+		<param name="computationDomain">MyBiofilm</param>
+
+		
+		<param name="resolution" unit="um">8.0</param>
+
+		
+		<detachment class="DS_Quadratic">
+			<param name="kDet" unit="um-1.hour-1">5e-6</param>
+			<param name="maxTh" unit="um">200.0</param>
+		</detachment>
+
+		
+		<param name="sloughDetachedBiomass">true</param>
+		
+		
+		<param name="shovingMaxNodes">2e6</param>
+		<param name="shovingFraction">0.025</param>
+		<param name="shovingMaxIter">250</param>
+		<param name="shovingMutual">true</param>
+	</agentGrid>
+
+
+	
+	<species class="Bacterium" name="Mygingivalis">
+		<particle name="biomass">
+			<param name="mass" unit="fg">0</param>
+		</particle>
+		<particle name="inert">
+			<param name="mass" unit="fg">0.0</param>
+		</particle>
+
+		<param name="color">blue</param>
+		<param name="computationDomain">MyBiofilm</param>
+		<param name="divRadius" unit="um">1.0</param>
+		<param name="divRadiusCV">0.1</param>
+		<param name="deathRadius" unit="um">0.1</param>
+		<param name="deathRadiusCV">0.1</param>
+		<param name="babyMassFrac">0.5</param>
+		<param name="babyMassFracCV">0.05</param>
+		<param name="shoveFactor" unit="um">1.15</param>
+		<param name="shoveLimit" unit="um">0.0</param>
+
+		<param name="epsMax">0.1</param>
+		<param name="kHyd" unit="hr-1">0.007</param>
+
+		<reaction name="MyGrowthgingivalis" status="active"/>
+		
+
+		<initArea number="5">
+			<param name="birthday" unit="hour">0.0</param>
+			<coordinates x="0.0" y="0.0" z="0.0"/>
+			<coordinates x="1.0" y="264.0" z="0.0"/>
+		</initArea>
+	</species>
+
+	<species class="Bacterium" name="Mygordonii">
+		<particle name="biomass">
+			<param name="mass" unit="fg">0.0</param>
+		</particle>
+		<particle name="inert">
+			<param name="mass" unit="fg">0.0</param>
+		</particle>
+
+		<param name="color">red</param>
+		<param name="computationDomain">MyBiofilm</param>
+		<param name="divRadius" unit="um">1.0</param>
+		<param name="divRadiusCV">0.1</param>
+		<param name="deathRadius" unit="um">0.1</param>
+		<param name="deathRadiusCV">0.2</param>
+		<param name="babyMassFrac">0.5</param>
+		<param name="babyMassFracCV">0.05</param>
+		<param name="shoveFactor" unit="um">1.15</param>
+		<param name="shoveLimit" unit="um">0.0</param>
+
+		<param name="epsMax">0.1</param>
+		<reaction name="MyGrowthgordonii" status="active"/>
+		<reaction name="MyToxingordonii" status="active"/>
+		
+		<initArea number="100">
+			<param name="birthday" unit="hour">0.0</param>
+			<coordinates x="0.0" y="0.0" z="0.0"/>
+			<coordinates x="1.0" y="528.0" z="0.0"/>
+		</initArea>
+	</species>
+	
+</idynomics>
